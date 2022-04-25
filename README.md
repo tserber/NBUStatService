@@ -15,12 +15,14 @@ where from and to is dates range for which we need to return currency data.
 
 Service authorization is made by tokens, which is sent by header "Authentication" 
 list of which is located at config.json.
+
 -----------------------------------------------------------------------------------------------
 Were relised Unit tests for next points:
 
 Unauthorised user request.
 Unavailable bank.gov.ua domain.
 Format of get parameters is unreadable or incorrect.
+
 -----------------------------------------------------------------------------------------------
 How to use.
 
