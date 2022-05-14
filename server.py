@@ -5,12 +5,12 @@ import logging
 from datetime import timedelta, datetime
 
 os.environ.setdefault('AIOHTTP_NO_EXTENSIONS', "1")
-from aiohttp import web
+from aiohttp import web, ClientConnectorError
 import aiohttp
 
 USER_AGENT = {"User-Agent": "Mozilla/5.0 (Linux; Android 8.0.0; SM-A605FN) AppleWebKit/537.36 (KHTML, like Gecko)"
                             " Chrome/87.0.4280.86 Mobile Safari/537.36"}
-EXCHANGE_API_URL = "http://127.0.0.1/NBUStatService/v1/statdirectory/exchange"
+EXCHANGE_API_URL = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange"
 with open("config.json") as file:
     CONFIG = json.load(file)
     print(CONFIG)
@@ -44,7 +44,9 @@ async def handle(request):
     try:
         from_date = datetime.strptime(input_data['from'], '%Y-%m-%d').date()
         to_date = datetime.strptime(input_data['to'], '%Y-%m-%d').date()
-    except:
+    except KeyError as e:
+        return aiohttp.web.HTTPBadRequest(text="400, Check format: /exchange?from=yyyy-mm-dd&to=yyyy-mm-dd")
+    except KeyError:
         return aiohttp.web.HTTPBadRequest(text="400, Check format: /exchange?from=yyyy-mm-dd&to=yyyy-mm-dd")
 
     async with aiohttp.ClientSession() as session:
@@ -52,7 +54,11 @@ async def handle(request):
         for item in daterange(from_date, to_date):
             task = get_exchange(item, session)
             tasks.append(task)
-        results = await asyncio.gather(*tasks)
+        try:
+            results = await asyncio.gather(*tasks)
+        except ClientConnectorError:
+            print()
+
 
     return web.json_response(results)
 
